@@ -64,4 +64,100 @@ label {
     cursor: pointer;
     flex: 1;
     user-select: none;
+}
+
+.gestionar-btn {
+    display: block;
+    margin: 0 auto 24px auto;
+    padding: 10px 24px;
+    background: #4ecca3;
+    color: #181818;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.gestionar-btn:hover {
+    background: #38b18a;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.6);
+}
+.modal-content {
+    background: #23272f;
+    margin: 60px auto;
+    padding: 24px 32px;
+    border-radius: 10px;
+    max-width: 400px;
+    color: #f1f1f1;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+.close {
+    position: absolute;
+    right: 18px;
+    top: 12px;
+    font-size: 1.6em;
+    color: #aaa;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close:hover {
+    color: #fff;
+}
+#form-tarea label {
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 4px;
+}
+#form-tarea input[type="text"],
+#form-tarea select {
+    width: 100%;
+    padding: 7px;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #181818;
+    color: #f1f1f1;
+    margin-bottom: 10px;
+}
+#form-tarea button[type="submit"] {
+    background: #4ecca3;
+    color: #181818;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+#form-tarea button[type="submit"]:hover {
+    background: #38b18a;
+}
+#agregar-quitar {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+}
+#agregar-quitar label {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    gap: 4px;
+}
+#agregar-quitar input[type="radio"] {
+    margin: 0 4px 0 0;
 } 

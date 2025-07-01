@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="container">
+        <button id="gestionar-tareas-btn" class="gestionar-btn">Agregar/Quitar tarea</button>
         <h1>Lista de Tareas GTA</h1>
         <section>
             <h2>Tareas Diarias</h2>
@@ -60,6 +61,36 @@
                 <li><label><input type="checkbox" class="estatica"> Z TIPE BIGMONEY</label></li>
             </ul>
         </section>
+    </div>
+    <!-- Modal para agregar/quitar tareas -->
+    <div id="modal-tarea" class="modal">
+        <div class="modal-content">
+            <span class="close" id="cerrar-modal">&times;</span>
+            <h2>Gestionar tareas</h2>
+            <form id="form-tarea">
+                <label for="apartado">Apartado:</label>
+                <select id="apartado" required>
+                    <option value="diaria">Diarias</option>
+                    <option value="semanal">Semanales</option>
+                    <option value="estatica">Estáticas</option>
+                </select>
+                <div id="agregar-quitar">
+                    <input type="radio" id="agregar" name="accion" value="agregar" checked>
+                    <label for="agregar">Agregar</label>
+                    <input type="radio" id="quitar" name="accion" value="quitar">
+                    <label for="quitar">Quitar</label>
+                </div>
+                <div id="campo-nombre">
+                    <label for="nombre-tarea">Nombre de la tarea:</label>
+                    <input type="text" id="nombre-tarea" maxlength="50">
+                </div>
+                <div id="campo-quitar" style="display:none;">
+                    <label for="tarea-existente">Selecciona la tarea a quitar:</label>
+                    <select id="tarea-existente"></select>
+                </div>
+                <button type="submit">Aceptar</button>
+            </form>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

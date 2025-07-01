@@ -78,4 +78,113 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCheckboxes('semanal');
     setupCheckboxes('estatica');
     setupResets();
-}); 
+});
+
+// --- Gestión de tareas dinámicas ---
+const btnGestionar = document.getElementById('gestionar-tareas-btn');
+const modal = document.getElementById('modal-tarea');
+const cerrarModal = document.getElementById('cerrar-modal');
+const formTarea = document.getElementById('form-tarea');
+const selectApartado = document.getElementById('apartado');
+const radioAgregar = document.getElementById('agregar');
+const radioQuitar = document.getElementById('quitar');
+const campoNombre = document.getElementById('campo-nombre');
+const campoQuitar = document.getElementById('campo-quitar');
+const inputNombre = document.getElementById('nombre-tarea');
+const selectQuitar = document.getElementById('tarea-existente');
+
+// Guardar y cargar tareas personalizadas
+function getCustomTasks(type) {
+    return JSON.parse(localStorage.getItem('custom_' + type) || '[]');
+}
+function setCustomTasks(type, arr) {
+    localStorage.setItem('custom_' + type, JSON.stringify(arr));
+}
+
+function renderCustomTasks(type) {
+    const ul = document.getElementById(type + 's-list');
+    // Elimina tareas personalizadas previas
+    ul.querySelectorAll('li.custom').forEach(li => li.remove());
+    const custom = getCustomTasks(type);
+    custom.forEach((nombre, idx) => {
+        const li = document.createElement('li');
+        li.classList.add('custom');
+        li.innerHTML = `<label><input type="checkbox" class="${type}"> ${nombre}</label>`;
+        ul.appendChild(li);
+    });
+    // Recargar eventos y estado
+    loadState(type);
+    setupCheckboxes(type);
+}
+
+function updateQuitarSelect() {
+    const type = selectApartado.value;
+    const ul = document.getElementById(type + 's-list');
+    // Tareas base
+    const baseTasks = Array.from(ul.querySelectorAll('li:not(.custom) label')).map(lab => lab.textContent.trim());
+    // Tareas custom
+    const customTasks = getCustomTasks(type);
+    selectQuitar.innerHTML = '';
+    [...baseTasks, ...customTasks].forEach((nombre, i) => {
+        const opt = document.createElement('option');
+        opt.value = i < baseTasks.length ? 'base-' + i : 'custom-' + (i - baseTasks.length);
+        opt.textContent = nombre;
+        selectQuitar.appendChild(opt);
+    });
+}
+
+btnGestionar.onclick = () => {
+    modal.style.display = 'block';
+    radioAgregar.checked = true;
+    campoNombre.style.display = '';
+    campoQuitar.style.display = 'none';
+    inputNombre.value = '';
+    updateQuitarSelect();
+};
+cerrarModal.onclick = () => {
+    modal.style.display = 'none';
+};
+window.onclick = (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+};
+selectApartado.onchange = updateQuitarSelect;
+radioAgregar.onchange = () => {
+    campoNombre.style.display = '';
+    campoQuitar.style.display = 'none';
+};
+radioQuitar.onchange = () => {
+    campoNombre.style.display = 'none';
+    campoQuitar.style.display = '';
+    updateQuitarSelect();
+};
+
+formTarea.onsubmit = function(e) {
+    e.preventDefault();
+    const type = selectApartado.value;
+    if (radioAgregar.checked) {
+        const nombre = inputNombre.value.trim();
+        if (!nombre) return;
+        const custom = getCustomTasks(type);
+        custom.push(nombre);
+        setCustomTasks(type, custom);
+        renderCustomTasks(type);
+    } else {
+        // Quitar
+        const val = selectQuitar.value;
+        if (val.startsWith('base-')) {
+            // No se puede quitar tarea base
+            alert('No puedes quitar tareas base.');
+            return;
+        } else {
+            const idx = parseInt(val.replace('custom-', ''), 10);
+            const custom = getCustomTasks(type);
+            custom.splice(idx, 1);
+            setCustomTasks(type, custom);
+            renderCustomTasks(type);
+        }
+    }
+    modal.style.display = 'none';
+};
+
+// Renderizar tareas personalizadas al cargar
+['diaria','semanal','estatica'].forEach(renderCustomTasks); 
