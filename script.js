@@ -190,6 +190,9 @@ formTarea.onsubmit = function(e) {
             custom.push(nombre);
             setCustomTasks(type, custom);
             renderCustomTasks(type);
+            console.log(`Tarea "${nombre}" agregada a ${type}. Total: ${custom.length}`);
+        } else {
+            alert('Esta tarea ya existe.');
         }
     } else {
         // Quitar
@@ -223,15 +226,18 @@ formTarea.onsubmit = function(e) {
                 if (!deletedBase.includes(realIdx)) {
                     deletedBase.push(realIdx);
                     localStorage.setItem('deleted_base_' + type, JSON.stringify(deletedBase));
+                    console.log(`Tarea base eliminada de ${type}. Índice: ${realIdx}`);
                 }
             }
         } else {
             // Quitar tarea custom
             const idx = parseInt(val.replace('custom-', ''), 10);
             const custom = getCustomTasks(type);
+            const deletedTask = custom[idx];
             custom.splice(idx, 1);
             setCustomTasks(type, custom);
             renderCustomTasks(type);
+            console.log(`Tarea custom "${deletedTask}" eliminada de ${type}.`);
         }
     }
     modal.style.display = 'none';
@@ -250,6 +256,7 @@ function loadDeletedBaseTasks() {
                 baseLis[idx].style.display = 'none';
             }
         });
+        console.log(`Cargadas ${deletedBase.length} tareas base eliminadas para ${type}`);
     });
 }
 
