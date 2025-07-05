@@ -183,16 +183,30 @@ formTarea.onsubmit = function(e) {
             return;
         }
         if (val.startsWith('base-')) {
-            // Quitar tarea base
+            // Quitar tarea base (ocultar)
             const idx = parseInt(val.replace('base-', ''), 10);
             const ul = document.getElementById(type + 's-list');
-            const baseLi = ul.querySelectorAll('li:not(.custom)')[idx];
-            if (baseLi) {
-                baseLi.style.display = 'none';
+            // Solo contar los elementos visibles (no ocultos)
+            const baseLis = Array.from(ul.querySelectorAll('li:not(.custom)'));
+            let visibleIdx = -1;
+            let realIdx = -1;
+            for (let i = 0; i < baseLis.length; i++) {
+                if (baseLis[i].style.display !== 'none') {
+                    visibleIdx++;
+                }
+                if (visibleIdx === idx) {
+                    realIdx = i;
+                    break;
+                }
+            }
+            if (realIdx !== -1) {
+                baseLis[realIdx].style.display = 'none';
                 // Guardar estado de tareas base ocultas
-                const hiddenBase = JSON.parse(localStorage.getItem('hidden_base_' + type) || '[]');
-                hiddenBase.push(idx);
-                localStorage.setItem('hidden_base_' + type, JSON.stringify(hiddenBase));
+                let hiddenBase = JSON.parse(localStorage.getItem('hidden_base_' + type) || '[]');
+                if (!hiddenBase.includes(realIdx)) {
+                    hiddenBase.push(realIdx);
+                    localStorage.setItem('hidden_base_' + type, JSON.stringify(hiddenBase));
+                }
             }
         } else {
             // Quitar tarea custom
@@ -212,9 +226,10 @@ function loadHiddenBaseTasks() {
     ['diaria', 'semanal', 'estatica'].forEach(type => {
         const hiddenBase = JSON.parse(localStorage.getItem('hidden_base_' + type) || '[]');
         const ul = document.getElementById(type + 's-list');
-        ul.querySelectorAll('li:not(.custom)').forEach((li, idx) => {
-            if (hiddenBase.includes(idx)) {
-                li.style.display = 'none';
+        const baseLis = Array.from(ul.querySelectorAll('li:not(.custom)'));
+        hiddenBase.forEach(idx => {
+            if (baseLis[idx]) {
+                baseLis[idx].style.display = 'none';
             }
         });
     });
