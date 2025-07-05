@@ -120,17 +120,33 @@ function renderCustomTasks(type) {
 function updateQuitarSelect() {
     const type = selectApartado.value;
     const ul = document.getElementById(type + 's-list');
-    // Tareas base
-    const baseTasks = Array.from(ul.querySelectorAll('li:not(.custom)')).map(li => li.querySelector('label').textContent.trim());
+    // Tareas base (solo las visibles)
+    const baseLis = Array.from(ul.querySelectorAll('li:not(.custom)'));
+    const visibleBaseTasks = [];
+    baseLis.forEach((li, idx) => {
+        if (li.style.display !== 'none') {
+            visibleBaseTasks.push({
+                nombre: li.querySelector('label').textContent.trim(),
+                idx: idx
+            });
+        }
+    });
     // Tareas custom
     const customTasks = getCustomTasks(type);
     
     // Actualizar select de quitar
     selectQuitar.innerHTML = '';
-    [...baseTasks, ...customTasks].forEach((nombre, i) => {
+    [...visibleBaseTasks, ...customTasks].forEach((item, i) => {
         const opt = document.createElement('option');
-        opt.value = i < baseTasks.length ? 'base-' + i : 'custom-' + (i - baseTasks.length);
-        opt.textContent = nombre;
+        if (i < visibleBaseTasks.length) {
+            // Es tarea base
+            opt.value = 'base-' + item.idx;
+            opt.textContent = item.nombre;
+        } else {
+            // Es tarea custom
+            opt.value = 'custom-' + (i - visibleBaseTasks.length);
+            opt.textContent = item;
+        }
         selectQuitar.appendChild(opt);
     });
 }
