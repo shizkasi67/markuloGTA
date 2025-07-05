@@ -120,11 +120,11 @@ function renderCustomTasks(type) {
 function updateQuitarSelect() {
     const type = selectApartado.value;
     const ul = document.getElementById(type + 's-list');
-    // Tareas base (solo las visibles)
+    // Tareas base (solo las no eliminadas)
     const baseLis = Array.from(ul.querySelectorAll('li:not(.custom)'));
     const visibleBaseTasks = [];
     baseLis.forEach((li, idx) => {
-        if (li.style.display !== 'none') {
+        if (!li.classList.contains('deleted')) {
             visibleBaseTasks.push({
                 nombre: li.querySelector('label').textContent.trim(),
                 idx: idx
@@ -199,15 +199,15 @@ formTarea.onsubmit = function(e) {
             return;
         }
         if (val.startsWith('base-')) {
-            // Quitar tarea base (ocultar)
+            // Quitar tarea base permanentemente
             const idx = parseInt(val.replace('base-', ''), 10);
             const ul = document.getElementById(type + 's-list');
-            // Solo contar los elementos visibles (no ocultos)
+            // Solo contar los elementos visibles (no eliminados)
             const baseLis = Array.from(ul.querySelectorAll('li:not(.custom)'));
             let visibleIdx = -1;
             let realIdx = -1;
             for (let i = 0; i < baseLis.length; i++) {
-                if (baseLis[i].style.display !== 'none') {
+                if (!baseLis[i].classList.contains('deleted')) {
                     visibleIdx++;
                 }
                 if (visibleIdx === idx) {
@@ -216,12 +216,13 @@ formTarea.onsubmit = function(e) {
                 }
             }
             if (realIdx !== -1) {
+                baseLis[realIdx].classList.add('deleted');
                 baseLis[realIdx].style.display = 'none';
-                // Guardar estado de tareas base ocultas
-                let hiddenBase = JSON.parse(localStorage.getItem('hidden_base_' + type) || '[]');
-                if (!hiddenBase.includes(realIdx)) {
-                    hiddenBase.push(realIdx);
-                    localStorage.setItem('hidden_base_' + type, JSON.stringify(hiddenBase));
+                // Guardar estado de tareas base eliminadas permanentemente
+                let deletedBase = JSON.parse(localStorage.getItem('deleted_base_' + type) || '[]');
+                if (!deletedBase.includes(realIdx)) {
+                    deletedBase.push(realIdx);
+                    localStorage.setItem('deleted_base_' + type, JSON.stringify(deletedBase));
                 }
             }
         } else {
@@ -237,14 +238,15 @@ formTarea.onsubmit = function(e) {
     updateQuitarSelect();
 };
 
-// Cargar tareas base ocultas al inicio
-function loadHiddenBaseTasks() {
+// Cargar tareas base eliminadas al inicio
+function loadDeletedBaseTasks() {
     ['diaria', 'semanal', 'estatica'].forEach(type => {
-        const hiddenBase = JSON.parse(localStorage.getItem('hidden_base_' + type) || '[]');
+        const deletedBase = JSON.parse(localStorage.getItem('deleted_base_' + type) || '[]');
         const ul = document.getElementById(type + 's-list');
         const baseLis = Array.from(ul.querySelectorAll('li:not(.custom)'));
-        hiddenBase.forEach(idx => {
+        deletedBase.forEach(idx => {
             if (baseLis[idx]) {
+                baseLis[idx].classList.add('deleted');
                 baseLis[idx].style.display = 'none';
             }
         });
@@ -253,4 +255,4 @@ function loadHiddenBaseTasks() {
 
 // Renderizar tareas personalizadas al cargar
 ['diaria','semanal','estatica'].forEach(renderCustomTasks);
-loadHiddenBaseTasks(); 
+loadDeletedBaseTasks(); 
