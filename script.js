@@ -88,10 +88,10 @@ const formTarea = document.getElementById('form-tarea');
 const selectApartado = document.getElementById('apartado');
 const radioAgregar = document.getElementById('agregar');
 const radioQuitar = document.getElementById('quitar');
-const campoNombre = document.getElementById('campo-nombre');
+const campoAgregar = document.getElementById('campo-agregar');
 const campoQuitar = document.getElementById('campo-quitar');
 const inputNombre = document.getElementById('nombre-tarea');
-const selectQuitar = document.getElementById('tarea-existente');
+const selectQuitar = document.getElementById('tarea-existente-quitar');
 
 // Guardar y cargar tareas personalizadas
 function getCustomTasks(type) {
@@ -121,9 +121,11 @@ function updateQuitarSelect() {
     const type = selectApartado.value;
     const ul = document.getElementById(type + 's-list');
     // Tareas base
-    const baseTasks = Array.from(ul.querySelectorAll('li:not(.custom) label')).map(lab => lab.textContent.trim());
+    const baseTasks = Array.from(ul.querySelectorAll('li:not(.custom)')).map(li => li.querySelector('label').textContent.trim());
     // Tareas custom
     const customTasks = getCustomTasks(type);
+    
+    // Actualizar select de quitar
     selectQuitar.innerHTML = '';
     [...baseTasks, ...customTasks].forEach((nombre, i) => {
         const opt = document.createElement('option');
@@ -136,7 +138,7 @@ function updateQuitarSelect() {
 btnGestionar.onclick = () => {
     modal.style.display = 'block';
     radioAgregar.checked = true;
-    campoNombre.style.display = '';
+    campoAgregar.style.display = '';
     campoQuitar.style.display = 'none';
     inputNombre.value = '';
     updateQuitarSelect();
@@ -149,11 +151,11 @@ window.onclick = (e) => {
 };
 selectApartado.onchange = updateQuitarSelect;
 radioAgregar.onchange = () => {
-    campoNombre.style.display = '';
+    campoAgregar.style.display = '';
     campoQuitar.style.display = 'none';
 };
 radioQuitar.onchange = () => {
-    campoNombre.style.display = 'none';
+    campoAgregar.style.display = 'none';
     campoQuitar.style.display = '';
     updateQuitarSelect();
 };
@@ -163,19 +165,37 @@ formTarea.onsubmit = function(e) {
     const type = selectApartado.value;
     if (radioAgregar.checked) {
         const nombre = inputNombre.value.trim();
-        if (!nombre) return;
+        if (!nombre) {
+            alert('Por favor, escribe el nombre de la tarea.');
+            return;
+        }
         const custom = getCustomTasks(type);
-        custom.push(nombre);
-        setCustomTasks(type, custom);
-        renderCustomTasks(type);
+        if (!custom.includes(nombre)) {
+            custom.push(nombre);
+            setCustomTasks(type, custom);
+            renderCustomTasks(type);
+        }
     } else {
         // Quitar
         const val = selectQuitar.value;
-        if (val.startsWith('base-')) {
-            // No se puede quitar tarea base
-            alert('No puedes quitar tareas base.');
+        if (!val) {
+            alert('Por favor, selecciona una tarea para quitar.');
             return;
+        }
+        if (val.startsWith('base-')) {
+            // Quitar tarea base
+            const idx = parseInt(val.replace('base-', ''), 10);
+            const ul = document.getElementById(type + 's-list');
+            const baseLi = ul.querySelectorAll('li:not(.custom)')[idx];
+            if (baseLi) {
+                baseLi.style.display = 'none';
+                // Guardar estado de tareas base ocultas
+                const hiddenBase = JSON.parse(localStorage.getItem('hidden_base_' + type) || '[]');
+                hiddenBase.push(idx);
+                localStorage.setItem('hidden_base_' + type, JSON.stringify(hiddenBase));
+            }
         } else {
+            // Quitar tarea custom
             const idx = parseInt(val.replace('custom-', ''), 10);
             const custom = getCustomTasks(type);
             custom.splice(idx, 1);
@@ -184,7 +204,22 @@ formTarea.onsubmit = function(e) {
         }
     }
     modal.style.display = 'none';
+    updateQuitarSelect();
 };
 
+// Cargar tareas base ocultas al inicio
+function loadHiddenBaseTasks() {
+    ['diaria', 'semanal', 'estatica'].forEach(type => {
+        const hiddenBase = JSON.parse(localStorage.getItem('hidden_base_' + type) || '[]');
+        const ul = document.getElementById(type + 's-list');
+        ul.querySelectorAll('li:not(.custom)').forEach((li, idx) => {
+            if (hiddenBase.includes(idx)) {
+                li.style.display = 'none';
+            }
+        });
+    });
+}
+
 // Renderizar tareas personalizadas al cargar
-['diaria','semanal','estatica'].forEach(renderCustomTasks); 
+['diaria','semanal','estatica'].forEach(renderCustomTasks);
+loadHiddenBaseTasks(); 
